@@ -1,0 +1,3 @@
+[submodule "extern/VDF"]
+	path = extern/VDF
+	url = https://github.com/fatalis/VDF.git

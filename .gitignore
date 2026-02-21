@@ -1,0 +1,6 @@
+*.fail
+anglefix
+anglefix.exe
+test_anglefix
+.gdb_history
+build/
