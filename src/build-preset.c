@@ -47,7 +47,7 @@ void add_build_preset() {
 
                 KV_AddTail(presets, anglefix);
 
-                warn("first run: added \"Anglefix\" hammer++ build preset\n");
+                af_warn("first run: added \"Anglefix\" hammer++ build preset\n");
                 KV_Save(cfg, CFG);
             }
         }

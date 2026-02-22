@@ -9,7 +9,21 @@
 
 #include "util.h"
 
-af_bool is_zero(double x) {
+#ifdef _WIN32
+#define YELLOW (FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY)
+#define RED (FOREGROUND_RED | FOREGROUND_INTENSITY)
+#else
+#define YELLOW 0
+#define RED 0
+#endif
+
+char *log_file = NULL;
+
+void set_log_file(char *path) {
+    log_file = path;
+}
+
+af_bool is_near_zero(double x) {
     const double eps = 1e-5f; // very arbitrary
     return fabsl(x) < eps ? AF_TRUE : AF_FALSE;
 }
@@ -23,8 +37,8 @@ af_bool file_exists(const char *path) {
     return AF_FALSE;
 }
 
-af_bool vfprintf_color(FILE *stream, int color, const char *fmt, va_list args) {
-    if (stream == stdout || stream == stderr) {
+void vfprintf_color(FILE *stream, int color, const char *fmt, va_list args) {
+    if ((stream == stdout || stream == stderr) && color) {
 #ifdef _WIN32
         HANDLE hConsole = (stream == stdout)
             ? GetStdHandle(STD_OUTPUT_HANDLE)
@@ -35,46 +49,45 @@ af_bool vfprintf_color(FILE *stream, int color, const char *fmt, va_list args) {
         WORD saved_attributes = consoleInfo.wAttributes;
 
         SetConsoleTextAttribute(hConsole, color);
+        vfprintf(stream, fmt, args);
+        SetConsoleTextAttribute(hConsole, saved_attributes);
 #else
         // TODO: linux color
-#endif
         vfprintf(stream, fmt, args);
-#ifdef _WIN32
-        SetConsoleTextAttribute(hConsole, saved_attributes);
 #endif
-
-        return AF_TRUE;
+    } else {
+        vfprintf(stream, fmt, args);
     }
 
-    return AF_FALSE;
+    printf("write log?\n");
+    if (log_file) {
+        FILE *f = fopen(log_file, "a");
+        if (f) {
+            vfprintf(f, fmt, args);
+            fclose(f);
+        }
+    }
 }
 
-#if _WIN32
-#define YELLOW (FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY)
-#endif
-void warn(const char *fmt, ...) {
+void af_warn(const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
-#if _WIN32
     vfprintf_color(stderr, YELLOW, fmt, args);
-#else
-    vfprintf_color(stderr, 0, fmt, args);
-#endif
     va_end(args);
 }
 
-#if _WIN32
-#define RED (FOREGROUND_RED | FOREGROUND_INTENSITY)
-#endif
-void verr(const char *fmt, va_list args) {
-#if _WIN32
-    vfprintf_color(stderr, RED, fmt, args);
-#else
-    vfprintf_color(stderr, 0, fmt, args);
-#endif
+void af_log(const char *fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    vfprintf_color(stdout, 0, fmt, args);
+    va_end(args);
 }
 
-void err(const char *fmt, ...)
+void verr(const char *fmt, va_list args) {
+    vfprintf_color(stderr, RED, fmt, args);
+}
+
+void af_err(const char *fmt, ...)
 {
     va_list args;
     va_start(args, fmt);
@@ -82,7 +95,7 @@ void err(const char *fmt, ...)
     va_end(args);
 }
 
-void fatal(const char *fmt, ...) {
+void af_fatal(const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
     verr(fmt, args);
@@ -90,37 +103,36 @@ void fatal(const char *fmt, ...) {
     exit(1);
 }
 
-af_bool insert_prefix_before_ext(const char *fullpath, const char *prefix, char *out, size_t out_size) {
-    const char *slash1 = strrchr(fullpath, '/');
-    const char *slash2 = strrchr(fullpath, '\\');
-    const char *slash = (slash1 > slash2) ? slash1 : slash2; // pick the rightmost slash
-    const char *filename = (slash) ? slash + 1 : fullpath; // filename only
-    const char *dot = strrchr(filename, '.'); // last dot in filename
+// chatgpt
+char *replace_extension(const char *path, const char *new_ext) {
+    const char *dot;
+    const char *slash;
     size_t base_len;
+    size_t ext_len;
+    char *result;
 
-    if (dot) {
-        base_len = dot - filename; // length of base filename
+    if (!path || !new_ext)
+        return NULL;
+
+    slash = strrchr(path, '/');
+    dot = strrchr(path, '.');
+
+    /* Dot must be after the last slash to count as an extension */
+    if (!dot || (slash && dot < slash)) {
+        base_len = strlen(path);
     } else {
-        base_len = strlen(filename); // no extension
-        dot = filename + base_len;
+        base_len = (size_t)(dot - path);
     }
 
-    size_t dir_len = (slash) ? (slash - fullpath + 1) : 0; // include trailing '/'
-    size_t needed = dir_len + base_len + strlen(prefix) + strlen(dot) + 1;
+    ext_len = strlen(new_ext);
 
-    if (needed > out_size) return AF_FALSE; // not enough space
+    result = malloc(base_len + ext_len + 1);
+    if (!result)
+        return NULL;
 
-    // Copy directory part
-    if (dir_len > 0) {
-        memcpy(out, fullpath, dir_len);
-    }
+    memcpy(result, path, base_len);
+    memcpy(result + base_len, new_ext, ext_len);
+    result[base_len + ext_len] = '\0';
 
-    // Copy base filename
-    memcpy(out + dir_len, filename, base_len);
-    // Copy prefix
-    strcpy(out + dir_len + base_len, prefix);
-    // Copy extension
-    strcpy(out + dir_len + base_len + strlen(prefix), dot);
-
-    return AF_TRUE;
+    return result;
 }

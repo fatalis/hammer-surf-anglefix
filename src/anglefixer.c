@@ -82,14 +82,14 @@ af_bool get_face_displacement(KV_Pair *entity, KV_Pair *face, vec3_t *out, doubl
             vec3_t displacement = { 0.0, 0.0, 0.0 };
             int entity_id = get_id(entity);
             int face_id = get_id(face);
-            if (!is_zero(move_distance)) {
+            if (!is_near_zero(move_distance)) {
                 displacement.x = move_distance * cosl(theta);
                 displacement.y = move_distance * sinl(theta);
                 *out = displacement;
                 *distance = move_distance;
                 return AF_TRUE;
             } else {
-                printf("brush %d face %d no need to displace\n", entity_id, face_id);
+                af_log("brush %d face %d no need to displace\n", entity_id, face_id);
                 return AF_FALSE;
             }
         }
@@ -141,7 +141,7 @@ void handle_solid(KV_Pair *entity, const char *classname, int entity_id, KV_Pair
                     if (is_visual) {
                         KV_AddTail(move_solid_faces, KV_PairCopy(sub));
                     } else {
-                        warn("WARNING: smoothing group 32 set on brush %d <%s> solid %d face %d but brush is solid, ignoring\n", entity_id, classname, solid_id, face_id);
+                        af_warn("WARNING: smoothing group 32 set on brush %d <%s> solid %d face %d but brush is solid, ignoring\n", entity_id, classname, solid_id, face_id);
                     }
                     val &= ~SMOOTHING_GROUP_MOVE_SOLID_FACES;
                 }
@@ -149,14 +149,14 @@ void handle_solid(KV_Pair *entity, const char *classname, int entity_id, KV_Pair
                     if (is_visual) {
                         KV_AddTail(move_faces, KV_PairCopy(sub));
                     } else {
-                        warn("WARNING: smoothing group 31 set on brush %d <%s> solid %d face %d but brush is solid, ignoring\n", entity_id, classname, solid_id, face_id);
+                        af_warn("WARNING: smoothing group 31 set on brush %d <%s> solid %d face %d but brush is solid, ignoring\n", entity_id, classname, solid_id, face_id);
                     }
                     val &= ~SMOOTHING_GROUP_MOVE_FACES;
                 }
                 if (val & SMOOTHING_GROUP_DEBUG) {
                     debug_mode = AF_TRUE;
                     val &= ~SMOOTHING_GROUP_DEBUG;
-                    warn("WARNING: brush %d <%s> solid %d face %d had flag 30 - enabling debug mode globally\n");
+                    af_warn("WARNING: brush %d <%s> solid %d face %d had flag 30 - enabling debug mode globally\n");
                 }
 
                 char buf[32];
@@ -170,12 +170,12 @@ void handle_solid(KV_Pair *entity, const char *classname, int entity_id, KV_Pair
     size_t n_move_faces = KV_GetNodeCount(move_faces);
 
     if (n_move_solid_faces > 0 && n_move_faces > 0) {
-        fatal("USER ERROR: brush %d <%s> solid %d had faces with both flag 31 and 32\n", entity_id, classname, solid_id);
+        af_fatal("USER ERROR: brush %d <%s> solid %d had faces with both flag 31 and 32\n", entity_id, classname, solid_id);
     }
 
     if (n_move_solid_faces > 0) {
         if (n_move_solid_faces > 1) {
-            fatal("USER ERROR: brush %d <%s> solid %d had multiple faces flagged 31\n", entity_id, classname, solid_id);
+            af_fatal("USER ERROR: brush %d <%s> solid %d had multiple faces flagged 31\n", entity_id, classname, solid_id);
         }
 
         if (!*pentity_copy) {
@@ -206,7 +206,7 @@ void handle_solid(KV_Pair *entity, const char *classname, int entity_id, KV_Pair
             }
 
             solids_fixed++;
-            printf("31: brush %d <%s> solid %d moved %d faces by %g\n", entity_id, classname, solid_id, faces_moved, move_distance);
+            af_log("31: brush %d <%s> solid %d moved %d faces by %g\n", entity_id, classname, solid_id, faces_moved, move_distance);
         }
     } else if (n_move_faces > 0) {
         if (!*pentity_copy) {
@@ -230,7 +230,7 @@ void handle_solid(KV_Pair *entity, const char *classname, int entity_id, KV_Pair
                 displace_plane(copy_face, &displacement);
                 displace_verts(copy_face, &displacement);
                 faces_fixed++;
-                printf("32: brush %d <%s> solid %d face %d moved by %g\n", entity_id, classname, solid_id, face_id, move_distance);
+                af_log("32: brush %d <%s> solid %d face %d moved by %g\n", entity_id, classname, solid_id, face_id, move_distance);
             }
         }
     }
@@ -360,9 +360,9 @@ void anglefix_apply(KV_Pair *vmf, KV_Pair *collision_only_vmf) {
 
     KV_PairDestroy(changes);
 
-    printf("faces angle fixed:        %d\n", faces_fixed);
-    printf("solids angle fixed:       %d\n", solids_fixed);
-    printf("solids faces angle fixed: %d\n", solid_faces_fixed);
+    af_log("faces angle fixed:        %d\n", faces_fixed);
+    af_log("solids angle fixed:       %d\n", solids_fixed);
+    af_log("solids faces angle fixed: %d\n", solid_faces_fixed);
 }
 
 static void reset() {
@@ -381,7 +381,7 @@ char *anglefix_generate_output(const char *path, char **output_collision_only) {
     KV_Pair *vmf = KV_ParseFile(path);
 
     if (!vmf) {
-        fatal("%s\n", KV_GetError());
+        af_fatal("%s\n", KV_GetError());
     }
 
     reset();
@@ -395,14 +395,14 @@ char *anglefix_generate_output(const char *path, char **output_collision_only) {
     char *output = KV_Print(vmf, NULL, 1024*1024, "\t"); /* 1MB step */
     if (!output) {
         KV_PairDestroy(vmf);
-        fatal("%s\n", KV_GetError());
+        af_fatal("%s\n", KV_GetError());
     }
 
     if (output_collision_only) {
         char *buf = KV_Print(collision_only_vmf, NULL, 1024*1024, "\t"); /* 1MB step */
         if (!buf) {
             KV_PairDestroy(collision_only_vmf);
-            fatal("%s\n", KV_GetError());
+            af_fatal("%s\n", KV_GetError());
         }
         *output_collision_only = buf;
     }

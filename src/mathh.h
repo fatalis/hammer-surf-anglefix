@@ -1,5 +1,5 @@
-#ifndef MATH_H
-#define MATH_H
+#ifndef MATHH_H
+#define MATHH_H
 
 typedef struct {
     double x;
@@ -21,4 +21,4 @@ double calculate_move_distance(double theta);
 void vec_to_euler_angles(const vec3_t *v, euler_t *out);
 void plane_normal(const vec3x3_t *plane, vec3_t *out);
 
-#endif /* MATH_H */
+#endif /* MATHH_H */

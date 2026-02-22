@@ -32,7 +32,7 @@ af_bool dump_plane(char *buffer, size_t bufsize, const vec3x3_t *plane) {
     );
 
 #ifdef AF_DEBUG
-    printf("dump_plane dumped len %d\n", n);
+    log("dump_plane dumped len %d\n", n);
 #endif
 
     if (n < 0 || (size_t)n >= bufsize) {

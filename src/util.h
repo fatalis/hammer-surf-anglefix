@@ -7,13 +7,15 @@
 
 #define OOM "Out of memory\n"
 
-af_bool is_zero(double x);
+void set_log_file(char *path);
+af_bool is_near_zero(double x);
 af_bool file_exists(const char *path);
-af_bool vfprintf_color(FILE *stream, int color, const char *fmt, va_list args);
-void warn(const char *fmt, ...);
+void vfprintf_color(FILE *stream, int color, const char *fmt, va_list args);
+void af_log(const char *fmt, ...);
+void af_warn(const char *fmt, ...);
 void verr(const char *fmt, va_list args);
-void err(const char *fmt, ...);
-void fatal(const char *fmt, ...);
-af_bool insert_prefix_before_ext(const char *fullpath, const char *prefix, char *out, size_t out_size);
+void af_err(const char *fmt, ...);
+void af_fatal(const char *fmt, ...);
+char *replace_extension(const char *path, const char *new_ext);
 
 #endif /* UTIL_H */

@@ -6,6 +6,7 @@
 #include <math.h>
 #include <assert.h>
 #include <float.h>
+#include <time.h>
 
 #include <keyvalues.h>
 
@@ -30,46 +31,55 @@ int main(int argc, const char *argv[]) {
         } else if (!path) {
             path = argv[i];
         } else {
-            fatal("usage: anglefix.exe [-debug] <path>\n");
+            af_fatal("usage: anglefix.exe [-debug] <path>\n");
         }
     }
 
     if (!path) {
-        fatal("usage: anglefix.exe [-debug] <path>\n");
+        af_fatal("usage: anglefix.exe [-debug] <path>\n");
     }
+
+    char *log_file = replace_extension(path, "-anglefixed.log");
+    set_log_file(log_file);
+
+    // mimic the way valve tools do this
+    af_log("==================================================================\n");
+    time_t now = time(NULL);
+    struct tm *tm_info = localtime(&now);
+    char buf[32];
+    strftime(buf, sizeof(buf), "Date: %Y-%m-%d %H:%M:%S\n", tm_info);
+    af_log(buf);
+    for (int i = 0; i < argc; i++) {
+        af_log("%s ", argv[i]);
+    }
+    af_log("\n");
+    af_log("==================================================================\n");
+
+    char *vmf_file = replace_extension(path, "-anglefixed.vmf");
+    char *collision_file = replace_extension(path, "-anglefixed-collision.vmf");
 
     char *output_collision_only = NULL;
     char *output = anglefix_generate_output(path, &output_collision_only);
-    char new_path[MAX_PATH];
 
-    if (insert_prefix_before_ext(path, "-anglefixed", new_path, sizeof(new_path))) {
-        FILE *file = fopen(new_path, "w");
-        if (!file) {
-            KV_free(output);
-            fatal("Cannot open output file for writing\n");
-        }
-        fputs(output, file);
-        fclose(file);
-        printf("wrote %s\n", new_path);
-    } else {
-        KV_free(output);
-        fatal("-anglefixed.vmf: path too long\n");
+    FILE *f = fopen(vmf_file, "w");
+    if (!f) {
+        af_fatal("Cannot open output file for writing :%s\n", vmf_file);
     }
+    fputs(output, f);
+    fclose(f);
+    af_log("wrote %s\n", vmf_file);
 
-    if (insert_prefix_before_ext(path, "-anglefixed-collision", new_path, sizeof(new_path))) {
-        FILE *file = fopen(new_path, "w");
-        if (!file) {
-            KV_free(output_collision_only);
-            fatal("Cannot open output file for writing\n");
-        }
-        fputs(output_collision_only, file);
-        fclose(file);
-        printf("wrote %s\n", new_path);
-    } else {
-        KV_free(output_collision_only);
-        fatal("-anglefixed-collision.vmf: path too long\n");
+    f = fopen(collision_file, "w");
+    if (!f) {
+        af_fatal("Cannot open output file for writing: %s\n", collision_file);
     }
+    fputs(output_collision_only, f);
+    fclose(f);
+    af_log("wrote %s\n", collision_file);
 
+    free(vmf_file);
+    free(collision_file);
+    free(log_file);
     KV_free(output);
     KV_free(output_collision_only);
 
