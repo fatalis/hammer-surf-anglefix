@@ -1,6 +1,8 @@
 *.fail
 anglefix
+anglefix_linux
 anglefix.exe
+vbspplusplus_wrapper.exe
 test_anglefix
 .gdb_history
 build/

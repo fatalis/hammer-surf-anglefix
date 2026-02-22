@@ -5,6 +5,8 @@
 #include "build-preset.h"
 #include "util.h"
 
+// no longer used, see vbsp_wrapper.c
+
 build_step_t build_steps[] = {
     { NULL,             "1", "anglefix.exe", "$path\\$file.vmf" },
     { NULL,             "1", "$bsp_exe",     "-game $gamedir $path\\$file-anglefixed" },

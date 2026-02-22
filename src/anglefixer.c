@@ -378,6 +378,10 @@ static void reset() {
 }
 
 char *anglefix_generate_output(const char *path, char **output_collision_only) {
+    if (!file_exists(path)) {
+        af_fatal("input file doesn't exist: %s\n", path);
+    }
+
     KV_Pair *vmf = KV_ParseFile(path);
 
     if (!vmf) {

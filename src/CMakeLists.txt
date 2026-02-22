@@ -14,7 +14,6 @@ add_executable(anglefix
     vmf.c
     math.c
     util.c
-    build-preset.c
 )
 
 target_include_directories(anglefix
@@ -52,5 +51,9 @@ if(NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
         COMMAND "${CMAKE_COMMAND}" --build "${CMAKE_BINARY_DIR}" --target test_anglefix
         COMMAND "${CMAKE_CTEST_COMMAND}" --test-dir "${CMAKE_BINARY_DIR}" --output-on-failure
         COMMENT "Building test executable and running tests..."
+    )
+else()
+    add_executable(vbspplusplus_wrapper
+        vbsp_wrapper.c
     )
 endif()
