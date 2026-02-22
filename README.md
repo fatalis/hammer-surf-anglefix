@@ -1,21 +1,25 @@
 # About
 
-This tool aims to fully automate not-a-zombie's vmf resizer tool. https://not-a-zombie.github.io/vmf-resizer/
+This tool aims to fully automate not-a-zombie's vmf resizer tool: https://not-a-zombie.github.io/vmf-resizer/
 It acts as a pre-processor for the vmf file before it gets compiled and adds func_detail collision brushes before
 being sent to the compilers. It doesn't touch the original vmf in Hammer.
 
 # Setup
 
 Have Hammer++ installed: https://ficool2.github.io/HammerPlusPlus-Website/
+
 Have tools++ installed:
 https://ficool2.github.io/HammerPlusPlus-Website/tools.html
 https://github.com/ficool2/misc_tools/releases/download/v1/tools_plusplus.zip
 
 Configure Hammer++ to use tools++ (Tools->Options->Build Programs)
+
 Add toolsplusplus.fgd to your game data. (Tools->Options->Game Confurations->Game Data->Add)
 
 Extract anglefix.exe and vbspplusplus_wrapper.exe to where hammerplusplus.exe/vbspplusplus.exe are (bin/x64)
+    
 Rename vbspplusplus to real_vbspplusplus
+
 Rename vbspplusplus_wrapper to vbspplusplus
 
 # Using (basic guide for now)
