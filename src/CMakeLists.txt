@@ -18,7 +18,6 @@ add_executable(anglefix
 )
 
 target_include_directories(anglefix
-    PRIVATE "${PROJECT_ROOT}/include"
     PRIVATE "${PROJECT_ROOT}/extern/VDF"
 )
 
@@ -36,7 +35,6 @@ if(NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
     )
 
     target_include_directories(test_anglefix
-        PRIVATE "${PROJECT_ROOT}/include"
         PRIVATE "${PROJECT_ROOT}/extern/VDF"
     )
 

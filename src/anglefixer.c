@@ -85,8 +85,6 @@ af_bool get_face_displacement(KV_Pair *entity, KV_Pair *face, vec3_t *out, doubl
             if (!is_zero(move_distance)) {
                 displacement.x = move_distance * cosl(theta);
                 displacement.y = move_distance * sinl(theta);
-                /* printf("brush %d face %d displaced by %g\n", entity_id, face_id, move_distance); */
-                /* faces_fixed++; */
                 *out = displacement;
                 *distance = move_distance;
                 return AF_TRUE;
