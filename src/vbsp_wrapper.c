@@ -101,7 +101,11 @@ int main(int argc, char **argv) {
     char cmd[CMD_BUF];
     snprintf(cmd, sizeof(cmd), REAL_EXE);
     for (int i = 1; i < argc; ++i) {
-        append_quoted(cmd, sizeof(cmd), argv[i]);
+        if (i == argc - 1) {
+            append_quoted(cmd, sizeof(cmd), anglefixed_vmf);
+        } else {
+            append_quoted(cmd, sizeof(cmd), argv[i]);
+        }
     }
 
     int ret = system(cmd);
