@@ -59,7 +59,6 @@ void vfprintf_color(FILE *stream, int color, const char *fmt, va_list args) {
         vfprintf(stream, fmt, args);
     }
 
-    printf("write log?\n");
     if (log_file) {
         FILE *f = fopen(log_file, "a");
         if (f) {
