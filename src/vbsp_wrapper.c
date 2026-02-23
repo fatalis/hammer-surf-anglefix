@@ -1,3 +1,6 @@
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -54,7 +57,7 @@ static void rename_output(const char *path, const char *ext) {
 
     strncat(from, ext, sizeof(from) - strlen(from) - 1);
 
-    rename(from, to);
+    MoveFileExA(from, to, MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH);
 }
 
 static void append_quoted(char *dst, size_t dst_size, const char *arg) {
